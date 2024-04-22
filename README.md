@@ -38,8 +38,6 @@
 This small project was developed for the "Energy Management for IoT" course (Computer Engineering Master's degree in Embedded Systems at Polytechnic of Turin).\
 The objective is to analyze the energy consumption of watermarked images when they are sent over a serial line.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 ### Built With
 
 #### Datasets
@@ -58,8 +56,6 @@ Libraries used to apply the watermarks.
 `VideoDigitalWatermarking` was not used but it was an inspiration for the Bit Replacement algorithm, the only time-domain watermarking algorithm used in this project.
 
 * [Video Digital Watermarking](https://github.com/piraaa/VideoDigitalWatermarking)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -101,12 +97,7 @@ python3 plot.py
 ```
 This will start an interactive menu to select the appropriate file between the ones inside the simulation results folder.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 <!-- LICENSE -->
 ## License
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
