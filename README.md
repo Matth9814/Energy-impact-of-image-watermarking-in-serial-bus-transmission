@@ -65,7 +65,8 @@ Use the following command to install them:
 ```sh
 pip install -r requirements.txt
 ```
-
+If you want to use the same package versions the project was developed with just use `requirements_stable.txt` instead of `requirements.txt`
+  
 <!-- USAGE EXAMPLES -->
 ## Usage
 
