@@ -53,7 +53,7 @@ Libraries used to apply the watermarks.
 * [Blind watermark](https://pypi.org/project/blind-watermark/)
 * [Invisible watermark](https://pypi.org/project/invisible-watermark/)
 
-`VideoDigitalWatermarking` was not used but it was an inspiration for the Bit Replacement algorithm, the only time-domain watermarking algorithm used in this project.
+`VideoDigitalWatermarking` was not used but it was an inspiration for the Bit Replacement algorithm, the only spatial domain watermarking algorithm used in this project.
 
 * [Video Digital Watermarking](https://github.com/piraaa/VideoDigitalWatermarking)
 
@@ -66,10 +66,9 @@ Use the following command to install them:
 pip install -r requirements.txt
 ```
 If you want to use the same package versions the project was developed with just use `requirements_stable.txt` instead of `requirements.txt`
-  
+
 <!-- USAGE EXAMPLES -->
 ## Usage
-
 All the code is stored in the `src/` folder.\
 The simulation flow can be tuned through the environment variables in `src/header.py` and the most important variables are:
 
@@ -85,11 +84,15 @@ The simulation flow can be tuned through the environment variables in `src/heade
 * `SIM_RES_PATH`: root folder of the simulation results;
 * `DATA_KEYS`: entries of the data structure the simulation results are recorded into; it can be found at the end of `src/main.py`.
 
-After setting up a simulation, it can be started by executing:
+Before starting a real benchmark, compute the maximum watermark size by setting `WM_SIZE_COMP=True` and executing:
+<a name="simstart"></a>
 ```py
 cd src
 python3 main.py
 ```
+Follow the instructions on the terminal and, in case you feel lost, check the code since there are a lot of comments that can help you understand the program structure.\
+
+The real benchmark can be started by executing the same [commands](#simstart) (remember to set `WM_SIZE_COMP=False`).\
 The simulation progress is reported on the terminal and, at the end, the result is recored in a file inside the `simres\` folder. The file name can be found by looking at the `DATA_FILENAME` macro inside `src/header.py`.
 
 At this point the results can be analyzed by executing:

@@ -39,21 +39,9 @@ if __name__ == "__main__":
         # only on the size of the image the wm is embedded into since the block division cannot be changed
 
         print(f"Maximum watermark size: {floor(minB)} bytes")
-        print("NOTE: Remember to store the maximum watermark dimension in WM_BSIZE \"header.py\"")
-        print("      Change also WM_DIM in case images are used as watermark")
-
-        if WM_TYPE =='img':
-            print("Resizing image...")
-            wm_size = floor(minB**0.5)
-            # The original watermark is resized only when the maximum size is recomputed
-            # In the wm algorithms energy benchmark the resized version is used
-            wm = cv.imread(WM_PATH+WM_NAME_FULL,cv.IMREAD_COLOR)
-            wm = cv.resize(wm,(wm_size,wm_size))
-            resized_wm = f"{WM_NAME}_{wm_size}x{wm_size}.{WM_EXTENSION}"
-            cv.imwrite(WM_PATH+resized_wm,wm)
-            print(f"Image ready as {resized_wm}")
-            # Change WM_DIM macro in header.py 
-
+        print("NOTE: Remember to store the maximum watermark dimension in WM_BSIZE inside \"header.py\"")
+        print(f"NOTE: Set \"WM_DIM = {floor(minB**0.5)}\" in case images are used as watermark")
+        print("WARNING: Not changing the appropriate macros in \"header.py\" may lead to errors difficult to spot")
         exit()
     else:
         minB = WM_BSIZE
@@ -61,8 +49,25 @@ if __name__ == "__main__":
     if WM_TYPE not in WM_TYPES:
         raise Exception('The watermark has to be either an image or a string')
     elif WM_TYPE == 'img':
-        wm_size = floor(minB**0.5)
+        # wm_size is redundant at the moment and could be completely substituted by WM_DIM
+        # It was used when the image shape was computed dynamically 
+        wm_size = WM_DIM  # Image shape (wm_size x wm_size)
         wm = cv.imread(WM_PATH+WM_NAME_RESIZED,cv.IMREAD_GRAYSCALE)
+        if wm is None: # The image is resized if it doesn't exist
+            print("Resizing image...")
+            # The original watermark is always resized if it doesn't exist, even if it is smaller than the
+            # maximum size, in order to adapt its name to the correct format (i.e. the format of WM_NAME_RESIZED)
+            # In the wm algorithms energy benchmark the resized version is used
+            wm = cv.imread(WM_PATH+WM_NAME_FULL,cv.IMREAD_COLOR)
+            wm = cv.resize(wm,(wm_size,wm_size))
+            #plt.imshow(wm)
+            #plt.show()
+            # Same name format as WM_NAME_RESIZED 
+            resized_wm = f"{WM_NAME}_{wm_size}x{wm_size}.{WM_EXTENSION}"
+            cv.imwrite(WM_PATH+resized_wm,wm)
+            print(f"Image ready as {resized_wm}")
+            wm = cv.imread(WM_PATH+resized_wm,cv.IMREAD_GRAYSCALE)
+        
         print(f"Watermark: {WM_NAME_RESIZED}")
         #plt.imshow(wm)
         #plt.show()
@@ -121,6 +126,7 @@ if __name__ == "__main__":
                 vctr_wm = vctr_wm.tobytes().decode('utf-8')
 
             if DEBUG_BR:
+                # Check if the original image and the one with the embedded wm are the same
                 print(f"Same img: {sameImg(img_bgr,img_toWm)}")
                 # Check that the embedded watermark and the extracted one are the same
                 issameWm = sameWm(wm,br_wm,mode=WM_TYPE)
@@ -183,12 +189,15 @@ if __name__ == "__main__":
                 imgs = [img_bgr,bw_img]
                 imgsPlot(imgs,titles,"Images comparison [DCT+SVD (BW)]")
 
+                # Check if the original image and the one with the embedded wm are the same
+                print(f"Same img: {sameImg(img_bgr,bw_img)}") 
+
                 # Extract
                 if WM_TYPE == 'img':
                     #bw_extrwm_path = f"extrWm/bw/{resized_wm}"
                     #bw_wm = bwm.extract(filename=bw_img_path, wm_shape=(wm_size, wm_size), out_wm_name=bw_extrwm_path, mode=WM_TYPE).astype(np.uint8)
                     
-                    # NOTE: modified the library as follows at lines 108-109 to avoid writing the extracted wm
+                    # NOTE: modified the library as follows at lines 102-103 to avoid writing the extracted wm
                     #       if out_wm_name is not None:
                     #            cv2.imwrite(out_wm_name, wm)
                     bw_wm = bwm.extract(embed_img=bw_img, wm_shape=(wm_size, wm_size), mode=WM_TYPE).astype(np.uint8)
@@ -206,7 +215,7 @@ if __name__ == "__main__":
                 # extraction lowers its quality
                 if not sameWm(wm,bw_wm,mode=WM_TYPE):
                     print("WARNING: original and extracted watermark are different")
-
+                
                 print(f"Original image energy cons. : {base_enCons}")
                 print(f"Watermarked image energy cons. : {BW_enCons}")
                 print(f"Energy consumption increase with watermark [DCT+SVD (BW)]: {(BW_enCons/base_enCons-1.0):.4}")
@@ -250,7 +259,10 @@ if __name__ == "__main__":
                 titles = ['Original image','Image w/Embedded WM']
                 imgs = [img_bgr,iw_img]
                 imgsPlot(imgs,titles,"Images comparison [DWT+DCT+SVD (IW)]")
-
+                
+                # Check if the original image and the one with the embedded wm are the same
+                print(f"Same img: {sameImg(img_bgr,iw_img)}")
+                
                 # Extract
                 decoder = WatermarkDecoder('bytes',len(iw_wm)*8) # Length expressed in bits
                 iw_vctr_wm = bytearray(decoder.decode(iw_img,'dwtDctSvd'))

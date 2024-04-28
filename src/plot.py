@@ -130,9 +130,10 @@ if __name__ == "__main__":
         try:
             for file in inp:
                 file = int(file)-1
-                plotSimulationData(simfiles[file],simTitle=simfiles[file],show=False)
+                plotSimulationData(SIM_RES_PATH+simfiles[file],simTitle=simfiles[file],show=False)
             plt.show()
         except Exception as e:
+            print(e)
             print("ERROR: Input value not valid")
         
         print("> Select file: ",end="")

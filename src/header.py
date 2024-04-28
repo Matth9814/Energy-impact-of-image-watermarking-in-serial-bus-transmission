@@ -41,7 +41,7 @@ WM_NAME_RESIZED = f"{WM_NAME}_{WM_DIM}x{WM_DIM}.{WM_EXTENSION}"     # Name of th
 
 # String wm
 WM_STR_FILE  = "stringWm.txt"       # Name of the file the string is sourced from
-WM_LINE = 1                         # Line the string is stored inside the file [1,2,3,...]
+WM_LINE = 2                         # Line the string is stored inside the file [1,2,3,...]
 
 with open(WM_PATH+WM_STR_FILE) as fp:
     WM_STR = fp.readlines()[WM_LINE-1]  # String used as watermark
@@ -73,6 +73,3 @@ else:
     # If they are the same for different string the previously generated file will be overwritten if present
     DATA_FILENAME = f"energy_consumption_wm{WM_TYPE}_{WM_STR[:6]}.json"
 DATA_KEYS = ['BR','BW','IW','BaseImg','Img'] # Recorded structure keys (check main.py for the dictionary structure)
-
-# ----------------- DATA ANALYSIS and PLOT ----------------- #
-#SIMDATA_FILES = ["energy_consumption_wmimg_logopolito.json","energy_consumption_wmimg_colorful.json"] # List of simulation files
