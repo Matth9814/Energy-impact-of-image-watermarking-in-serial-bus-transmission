@@ -85,21 +85,22 @@ The simulation flow can be tuned through the environment variables in `src/heade
 * `DATA_KEYS`: entries of the data structure the simulation results are recorded into; it can be found at the end of `src/main.py`.
 
 Before starting a real benchmark, compute the maximum watermark size by setting `WM_SIZE_COMP=True` and executing:
-<a name="simstart"></a>
-```py
+```sh
 cd src
 python3 main.py
 ```
 Follow the instructions on the terminal and, in case you feel lost, check the code since there are a lot of comments that can help you understand the program structure.\
 
-The real benchmark can be started by executing the same [commands](#simstart) (remember to set `WM_SIZE_COMP=False`).\
+The real benchmark can be started by executing again `main.py` after setting `WM_SIZE_COMP=False`.\
 The simulation progress is reported on the terminal and, at the end, the result is recored in a file inside the `simres\` folder. The file name can be found by looking at the `DATA_FILENAME` macro inside `src/header.py`.
 
 At this point the results can be analyzed by executing:
-```py
+```sh
 python3 plot.py
 ```
 This will start an interactive menu to select the appropriate file between the ones inside the simulation results folder.
+
+Check `report.pdf` for more info on the project.
 
 <!-- LICENSE -->
 ## License

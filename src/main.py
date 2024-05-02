@@ -211,8 +211,7 @@ if __name__ == "__main__":
                     print(f"Original WM: {wm}\nExtracted WM [DCT+SVD (BW)]: {bw_wm}")
                 
                 # Check if the wm are the same
-                # NOTE: the extracted watermark is usually different because the 
-                # extraction lowers its quality
+                # NOTE: the extracted watermark is usually different because the algorithm lowers its quality
                 if not sameWm(wm,bw_wm,mode=WM_TYPE):
                     print("WARNING: original and extracted watermark are different")
                 

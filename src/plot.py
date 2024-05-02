@@ -6,11 +6,6 @@ from header import plt,json,np,os,DATA_KEYS,SIM_RES_PATH
 #   If the json structure cannot be changed without changing the above scheme then the code needs to be modified
 ENERGY_DATA = len(DATA_KEYS)-1
 
-#def plotStructure(enCons:dict,title:str,):
-#    plt.figure()
-#
-#    for i in range(ENERGY_DATA):
-#        plt.
 
 def plotSimulationData(fn:str,simTitle:str="Simulation",show:bool=False):
     """ Elaborate energy consumption data and plot the results\n
@@ -30,14 +25,6 @@ def plotSimulationData(fn:str,simTitle:str="Simulation",show:bool=False):
     with open(fn) as fp:
         simData = json.load(fp)
 
-        plt.figure()
-        plt.title(f"{simTitle}\nEnergy consumption per image")
-        plt.ylabel("Energy consumption [number of transitions on a serial line]")
-        plt.xlabel("Images position in simData['img']")
-        for i in range(ENERGY_DATA):
-            plt.plot(simData[DATA_KEYS[i]],label=DATA_KEYS[i])
-        plt.legend(loc="upper right")
-        
         ### Energy statistics computation
 
         # Minimum and maximum power consumption
@@ -55,33 +42,28 @@ def plotSimulationData(fn:str,simTitle:str="Simulation",show:bool=False):
             imgIndex = listEnCons.index(minEnCons['energy'][i])
             minEnCons['img'].append(simData[DATA_KEYS[-1]][imgIndex]+f"[{imgIndex}]")
                 
-        fig, axs = plt.subplots(1,2)
-        fig.suptitle(f"{simTitle}\nMinimum and Maximum energy consumption")
-        titles = ['Minium energy cons.',"Maximum energy cons."]
-        to_plot = [minEnCons,maxEnCons]
-        for i in range(2):
-            for j in range(ENERGY_DATA-1):
-                axs[i].plot(to_plot[i]['img'][j],to_plot[i]['energy'][j],'v',label=DATA_KEYS[j])
-            axs[i].set_title(titles[i])
-            axs[i].legend()
-        
         # Percentage variation of algorithms energy consumption w.r.t. the base image consumption
+        # and average energy consumption
         percVariationsEnCons = []   # List of ENERGY_DATA-1 lists
         maxVar = {'energy':[],'img':[]}
         minVar = {'energy':[],'img':[]}
+        avgEnCons = [np.int64(0)]*ENERGY_DATA
         
         baseImgsIndex=ENERGY_DATA-1
         for i in range(ENERGY_DATA-1):
             percVariationsEnCons.append([])
-            minVar['energy'].append(np.finfo(np.float32).max)
-            maxVar['energy'].append(np.float32(0))
+            minVar['energy'].append(0)
+            maxVar['energy'].append(0)
             minVar['img'].append("No energy variation")
             maxVar['img'].append("No energy variation")
         
         baseImgsEnCons = simData[DATA_KEYS[baseImgsIndex]]
         for i in range(len(baseImgsEnCons)):
+            avgEnCons[baseImgsIndex] += baseImgsEnCons[i] # Accumulate energy consumption for base images
             for algo in range(ENERGY_DATA-1):
-                perVar = np.float32((simData[DATA_KEYS[algo]][i]-baseImgsEnCons[i])/100)
+                perVar = (simData[DATA_KEYS[algo]][i]-baseImgsEnCons[i])/baseImgsEnCons[i]*100
+                # Average consumption (for watermarking algorithms)
+                avgEnCons[algo] += np.int64(simData[DATA_KEYS[algo]][i])
                 # Minimum and maximum variations
                 percVariationsEnCons[algo].append(perVar) # Record % variation w.r.t. base image
                 if(perVar < minVar['energy'][algo]): # Min %
@@ -91,6 +73,47 @@ def plotSimulationData(fn:str,simTitle:str="Simulation",show:bool=False):
                     maxVar['energy'][algo] = perVar
                     maxVar['img'][algo] = simData[DATA_KEYS[-1]][i]+f"[{i}]"
         
+        avgEnCons = [round(enCons/len(baseImgsEnCons)) for enCons in avgEnCons]
+        # Average energy consumption % variation w.r.t. base images 
+        avgEnConsVar = [0]*(len(avgEnCons)-1)
+        avgEnConsVar = [round((avgEnCons[i]-avgEnCons[baseImgsIndex])/avgEnCons[baseImgsIndex]*100,4) for i in range(ENERGY_DATA-1)]
+        
+        # Plot energy consumption
+        plt.figure()
+        plt.title(f"{simTitle}\nEnergy consumption per image")
+        plt.ylabel("Energy consumption [number of transitions on a serial line]")
+        plt.xlabel("Images position in simData['img']")
+        for i in range(ENERGY_DATA):
+            plt.plot(simData[DATA_KEYS[i]],label=DATA_KEYS[i])
+        plt.legend(loc="upper right")
+
+        # Print avg energy cons.
+        print(f"### {simTitle} ###")
+        print(">>> Average energy consumption [#transitions]")
+        for i in range(ENERGY_DATA):
+            print(f"- {DATA_KEYS[i]} : {avgEnCons[i]}")
+
+        # Plot and print max/min energy cons.
+        title = "Minimum and Maximum energy consumption"
+        print(f">>> {title} [#transitions]")
+        fig, axs = plt.subplots(1,2)
+        fig.suptitle(f"{simTitle}\n{title}")
+        titles = ['Minium energy cons.',"Maximum energy cons."]
+        to_plot = [minEnCons,maxEnCons]
+        for i in range(2):
+            print(f"# {titles[i]}")
+            for j in range(ENERGY_DATA):
+                print(f"- {DATA_KEYS[j]} : {to_plot[i]['energy'][j]} [{to_plot[i]['img'][j]}]")
+                axs[i].plot(to_plot[i]['img'][j],to_plot[i]['energy'][j],'v',label=DATA_KEYS[j])
+            axs[i].set_title(titles[i])
+            axs[i].legend()
+        
+        # Print avg energy cons. variation
+        print(">>> Average energy consumption % variation w.r.t. basic images")
+        for i in range(ENERGY_DATA-1):
+            print(f"- {DATA_KEYS[i]} : {avgEnConsVar[i]} %")
+
+        # Plot energy cons. variation
         plt.figure()
         plt.title(f"{simTitle}\nPercentage variation w.r.t. the base image [negative values mean less energy consumption]")
         plt.ylabel("% variation w.r.t. the base image energy consumption")
@@ -99,13 +122,17 @@ def plotSimulationData(fn:str,simTitle:str="Simulation",show:bool=False):
             plt.plot(percVariationsEnCons[i],label=DATA_KEYS[i])
         plt.legend()
         
-        
+        # Print and plot min/max energy cons. variation
+        title = "Maximum positive/negative energy consumption variation w.r.t. the base images"
+        print(f">>> {title}")
         fig, axs = plt.subplots(1,2)
-        fig.suptitle(f"{simTitle}\nMinimum and Maximum energy consumption variation w.r.t. the base images")
-        titles = ['Minium variations',"Maximum variations"]
+        fig.suptitle(f"{simTitle}\n{title}")
+        titles = ['Maximum negative variations',"Maximum positive variations"]
         to_plot = [minVar,maxVar]
         for i in range(2):
+            print(f"# {titles[i]}")
             for j in range(ENERGY_DATA-1):
+                print(f"- {DATA_KEYS[j]} : {to_plot[i]['energy'][j]:.2} % [{to_plot[i]['img'][j]}]")
                 axs[i].plot(to_plot[i]['img'][j],to_plot[i]['energy'][j],'v',label=DATA_KEYS[j])
             axs[i].set_title(titles[i])
             axs[i].legend()
